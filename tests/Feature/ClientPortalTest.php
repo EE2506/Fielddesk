@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -46,4 +47,33 @@ class ClientPortalTest extends TestCase
         $this->get('/workspace')->assertForbidden();
         $this->get('/client/signup')->assertRedirect(route('client.portal'));
     }
+
+    public function test_dashboard_shows_only_the_clients_profile_and_introductions(): void
+    {
+        $this->withoutVite();
+        config(['app.key' => 'base64:'.base64_encode(str_repeat('f', 32))]);
+
+        $client = User::factory()->create(['role' => 'client']);
+        $otherClient = User::factory()->create(['role' => 'client']);
+        $agent = User::factory()->create();
+        $otherAgent = User::factory()->create();
+        DB::table('agent_introductions')->insert([
+            ['requester_id' => $client->id, 'agent_id' => $agent->id, 'status' => 'Accepted'],
+            ['requester_id' => $otherClient->id, 'agent_id' => $otherAgent->id, 'status' => 'Accepted'],
+        ]);
+
+        $this->actingAs($client)->get('/portal?page=2')->assertInertia(fn (Assert $page) => $page
+            ->component('ClientPortal')
+            ->where('profile.name', $client->name)
+            ->where('profile.email', $client->email)
+            ->missing('profile.id')
+            ->where('connectedAgent.agent_name', $agent->name)
+            ->missing('connectedAgent.email')
+        );
+        $this->get('/portal')->assertInertia(fn (Assert $page) => $page
+            ->has('introductions.data', 1)
+            ->where('introductions.data.0.agent_name', $agent->name)
+        );
+    }
+
 }

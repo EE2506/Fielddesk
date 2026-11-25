@@ -14,16 +14,20 @@ class IntroductionController extends Controller
 {
     public function clientPortal(Request $request): Response
     {
-        $introductions = DB::table('agent_introductions')->where('requester_id', $request->user()->id)
+        $client = $request->user();
+        $requests = DB::table('agent_introductions')->where('requester_id', $client->id)
             ->join('users', 'users.id', '=', 'agent_introductions.agent_id')
             ->select('agent_introductions.id', 'agent_introductions.status', 'users.name as agent_name')
-            ->latest('agent_introductions.id')->paginate(15);
+            ->latest('agent_introductions.id');
+        $connectedAgent = (clone $requests)->where('agent_introductions.status', 'Accepted')->first();
+        $introductions = $requests->paginate(15)->withQueryString();
+        $profile = $client->only(['name', 'email']);
 
         $agents = User::where('role', 'agent')->where('accepts_introductions', true)
             ->whereNotIn('id', DB::table('agent_introductions')->where('requester_id', $request->user()->id)->select('agent_id'))
-            ->orderBy('name')->orderBy('id')->paginate(15, ['id', 'name'], 'agents');
+            ->orderBy('name')->orderBy('id')->paginate(15, ['id', 'name'], 'agents')->withQueryString();
 
-        return Inertia::render('ClientPortal', compact('introductions', 'agents'));
+        return Inertia::render('ClientPortal', compact('introductions', 'agents', 'profile', 'connectedAgent'));
     }
 
     public function requestIntroduction(Request $request, int $agent): RedirectResponse

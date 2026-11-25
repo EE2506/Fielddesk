@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import '../../css/client-portal.css'
 
 defineOptions({ inheritAttrs: false })
-defineProps<{ title: string; mainClass?: string }>()
+defineProps<{ title: string; mainClass?: string; home?: string }>()
 </script>
 
 <template>
@@ -11,7 +11,7 @@ defineProps<{ title: string; mainClass?: string }>()
   <div class="portal-page">
     <a class="skip-link" href="#client-portal-content">Skip to content</a>
     <header class="portal-topbar portal-frame">
-      <a href="/" class="portal-brand" aria-label="Fielddesk home">
+      <a :href="home ?? '/'" class="portal-brand" aria-label="Fielddesk home">
         <span class="portal-brand-mark" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
             <path d="M12 2.8 20 6v5.6c0 5.3-3.3 8.3-8 10.6-4.7-2.3-8-5.3-8-10.6V6l8-3.2Z" />
