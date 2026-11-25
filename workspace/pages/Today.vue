@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
-import WorkspaceLayout from '../../resources/js/components/WorkspaceLayout.vue'
+import AgentWorkspaceLayout from '../components/AgentWorkspaceLayout.vue'
 import Pager from '../../resources/js/components/Pager.vue'
 import { calendarDate, clientName, clientUrl, type Callback, type Client, type Page, type Policy } from '../../resources/js/workspace'
 
@@ -19,8 +19,13 @@ const groups = computed(() => ['Overdue', 'Today', 'Upcoming callbacks'].map((na
 </script>
 
 <template>
-  <WorkspaceLayout title="Today">
+  <AgentWorkspaceLayout title="Today" :date="date">
     <header class="page-title"><h1>Today</h1><p>{{ date }} · Manila</p></header>
+    <div class="agent-summary" aria-label="Items shown on this page">
+      <strong>Today’s overview</strong>
+      <span>{{ followUps.data.length }} {{ followUps.data.length === 1 ? 'callback' : 'callbacks' }} shown</span>
+      <span>{{ deadlines.data.length }} {{ deadlines.data.length === 1 ? 'policy deadline' : 'policy deadlines' }} shown</span>
+    </div>
     <div class="day-columns">
       <section class="panel">
         <h2>Follow-ups</h2>
@@ -28,14 +33,16 @@ const groups = computed(() => ['Overdue', 'Today', 'Upcoming callbacks'].map((na
         <section v-for="group in groups" :key="group.name" class="task-group">
           <h3 :class="{ overdue: group.name === 'Overdue' }">{{ group.name }}</h3>
           <ul class="rows">
-            <li v-for="item in group.items" :key="item.id">
-              <Link :href="clientUrl(item.client.id)">{{ clientName(item.client) }}</Link>
-              <p>{{ item.reason }}<template v-if="item.policy"> · {{ item.policy.product }}</template></p>
+            <li v-for="item in group.items" :key="item.id" class="agent-callback-row">
               <p class="muted">{{ item.due_at }}</p>
-              <div class="actions">
-                <a :href="'tel:' + item.client.mobile">Call</a>
-                <a :href="'sms:' + item.client.mobile">Text</a>
-                <Link :href="clientUrl(item.client.id) + '?callback=' + item.id + '#log-contact'">Log contact</Link>
+              <div>
+                <Link :href="clientUrl(item.client.id)">{{ clientName(item.client) }}</Link>
+                <p>{{ item.reason }}<template v-if="item.policy"> · {{ item.policy.product }}</template></p>
+                <div class="actions">
+                  <a :href="'tel:' + item.client.mobile">Call</a>
+                  <a :href="'sms:' + item.client.mobile">Text</a>
+                  <Link :href="clientUrl(item.client.id) + '?callback=' + item.id + '#log-contact'">Log contact</Link>
+                </div>
               </div>
             </li>
           </ul>
@@ -55,5 +62,5 @@ const groups = computed(() => ['Overdue', 'Today', 'Upcoming callbacks'].map((na
         <Pager :page="deadlines" label="Policy deadline pages" />
       </section>
     </div>
-  </WorkspaceLayout>
+  </AgentWorkspaceLayout>
 </template>

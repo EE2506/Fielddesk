@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3'
 import FormErrors from '../../resources/js/components/FormErrors.vue'
-import WorkspaceLayout from '../../resources/js/components/WorkspaceLayout.vue'
+import AgentWorkspaceLayout from '../components/AgentWorkspaceLayout.vue'
 
 const props = defineProps<{ account: { name: string; policy_notice_days: number; accepts_introductions: boolean } }>()
 const form = useForm({
@@ -11,8 +11,8 @@ const form = useForm({
 </script>
 
 <template>
-  <WorkspaceLayout title="Settings">
-    <header class="page-title"><h1>Workspace settings</h1><p>{{ account.name }}</p></header>
+  <AgentWorkspaceLayout title="Settings">
+    <header class="page-title"><h1>Reminder settings</h1><p>{{ account.name }}</p></header>
     <section class="panel settings-panel">
       <h2>Reminders and introductions</h2>
       <form class="fields" @submit.prevent="form.patch('/workspace/settings')">
@@ -25,5 +25,5 @@ const form = useForm({
         <p v-if="form.recentlySuccessful" role="status">Settings saved.</p>
       </form>
     </section>
-  </WorkspaceLayout>
+  </AgentWorkspaceLayout>
 </template>

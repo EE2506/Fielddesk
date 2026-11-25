@@ -6,7 +6,7 @@ import ContactForm from '../../resources/js/components/ContactForm.vue'
 import DocumentChecklist from '../../resources/js/components/DocumentChecklist.vue'
 import Pager from '../../resources/js/components/Pager.vue'
 import PolicyForm from '../../resources/js/components/PolicyForm.vue'
-import WorkspaceLayout from '../../resources/js/components/WorkspaceLayout.vue'
+import AgentWorkspaceLayout from '../components/AgentWorkspaceLayout.vue'
 import { calendarDate, clientName, clientUrl, manilaTime, type Callback, type Client, type Page, type Policy } from '../../resources/js/workspace'
 
 const props = defineProps<{
@@ -20,22 +20,24 @@ const source = computed(() => props.followUps.find((item) => item.id === props.s
 </script>
 
 <template>
-  <WorkspaceLayout :title="clientName(client)">
+  <AgentWorkspaceLayout :title="clientName(client)">
     <datalist id="event-types">
       <option value="Renewal"></option><option value="End of cover"></option>
       <option value="Premium due"></option><option value="Review"></option>
     </datalist>
     <header class="page-title">
       <Link href="/workspace/clients">All clients</Link>
-      <h1>{{ clientName(client) }}</h1>
-      <p>{{ client.mobile }} · {{ client.reference }}</p>
-      <div class="actions">
+      <div class="agent-client-identity">
+        <span class="agent-initial" aria-hidden="true">{{ clientName(client).slice(0, 1).toUpperCase() }}</span>
+        <div><h1>{{ clientName(client) }}</h1><p class="muted">{{ client.mobile }} · {{ client.reference }}</p></div>
+      </div>
+      <div class="actions agent-contact-actions">
         <a :href="'tel:' + client.mobile">Call</a>
         <a :href="'sms:' + client.mobile">Text</a>
         <a href="#log-contact">Log contact</a>
       </div>
     </header>
-    <div class="day-columns">
+    <div class="day-columns agent-detail-layout">
       <div class="stack">
         <section class="panel" id="log-contact">
           <h2>{{ source ? 'Log callback outcome' : 'Log contact' }}</h2>
@@ -46,9 +48,11 @@ const source = computed(() => props.followUps.find((item) => item.id === props.s
           <h2>Policies</h2>
           <p v-if="!policies.length" class="muted">No policies added.</p>
           <article v-for="policy in policies" :id="'policy-' + policy.id" :key="policy.id" class="policy">
-            <h3>{{ policy.product }}</h3>
-            <p>{{ policy.insurer }} · {{ policy.event_label }} · {{ calendarDate(policy.due_on) }}</p>
-            <p v-if="policy.reference" class="muted">Policy reference · {{ policy.reference }}</p>
+            <div class="agent-policy-summary">
+              <h3>{{ policy.product }}</h3>
+              <p>{{ policy.insurer }} · {{ policy.event_label }} · {{ calendarDate(policy.due_on) }}</p>
+              <p v-if="policy.reference" class="muted">Policy reference · {{ policy.reference }}</p>
+            </div>
             <details v-if="policy.filing_reference"><summary>Private filing reference</summary><p>{{ policy.filing_reference }}</p></details>
             <DocumentChecklist :client-id="client.id" :policy-id="policy.id" :documents="policy.documents" />
             <details><summary>Edit policy</summary><PolicyForm :client-id="client.id" :policy="policy" /></details>
@@ -85,5 +89,5 @@ const source = computed(() => props.followUps.find((item) => item.id === props.s
         </section>
       </div>
     </div>
-  </WorkspaceLayout>
+  </AgentWorkspaceLayout>
 </template>
